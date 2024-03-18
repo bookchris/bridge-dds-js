@@ -2,14 +2,26 @@
   "name": "bridge-dds",
   "version": "1.0.0",
   "description": "Duplicate bridge double dummy APIs in Javascript",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "declaration": "dist/index.d.ts",
   "scripts": {
+    "build": "rollup -c",
     "test": "vitest"
   },
   "author": "Christopher Book",
   "license": "Apache-2.0",
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@rollup/plugin-wasm": "^6.2.2",
     "@types/emscripten": "^1.39.10",
     "@types/node": "^20.11.28",
+    "rollup": "^4.13.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.4.2",
     "vitest": "^1.2.2"
   }
 }
