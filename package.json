@@ -1,0 +1,15 @@
+{
+  "name": "bridge-dds",
+  "version": "1.0.0",
+  "description": "Duplicate bridge double dummy APIs in Javascript",
+  "scripts": {
+    "test": "vitest"
+  },
+  "author": "Christopher Book",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/emscripten": "^1.39.10",
+    "@types/node": "^20.11.28",
+    "vitest": "^1.2.2"
+  }
+}
