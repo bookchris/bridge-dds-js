@@ -1,4 +1,4 @@
 node_modules/
 dist/
-out.js
-out.wasm
+lib/out.js
+lib/out.wasm
