@@ -1,6 +1,21 @@
-import { Dds, Direction, FutureTricks, Trump } from "bridge-dds";
+import { Dds, FutureTricks } from "bridge-dds";
 import * as Comlink from "comlink";
 import { useEffect, useMemo, useState } from "react";
+
+export enum Trump {
+  Spades = 0,
+  Hearts = 1,
+  Diamonds = 2,
+  Clubs = 3,
+  NoTrump = 4,
+}
+
+enum Direction {
+  North = 0,
+  East = 1,
+  South = 2,
+  West = 3,
+}
 
 function useDdsWorker() {
   return useMemo(() => {
@@ -26,7 +41,7 @@ function App() {
       })
       .then(setValue)
       .catch(setError);
-  }, [ddsWorker]);
+  }, []);
 
   return error ? (
     <div>error {JSON.stringify(error)}</div>

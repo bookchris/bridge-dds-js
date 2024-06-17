@@ -2,32 +2,22 @@
   "name": "bridge-dds",
   "version": "1.0.1",
   "description": "Duplicate bridge double dummy APIs in Javascript",
-  "main": "./dist/bridge-dds.umd.js",
-  "module": "./dist/bridge-dds.es.js",
-  "exports": {
-    ".": {
-      "import": "./dist/bridge-dds.es.js",
-      "require": "./dist/bridgs-dds.umd.js"
-    }
-  },
-  "types": "./dist/index.d.ts",
+  "main": "./dds.js",
+  "types": "./api.d.ts",
   "scripts": {
-    "build": "tsc && vite build",
-    "test": "vitest"
+    "build": "make"
   },
   "author": "Christopher Book",
   "license": "Apache-2.0",
   "files": [
-    "dist"
+    "index.d.ts",
+    "dds.js"
   ],
   "devDependencies": {
     "@types/emscripten": "^1.39.10",
     "@types/node": "^20.11.28",
     "tslib": "^2.6.2",
-    "typescript": "^5.4.2",
-    "vite": "^5.2.11",
-    "vite-plugin-dts": "^3.9.1",
-    "vitest": "^1.2.2"
+    "typescript": "^5.4.2"
   },
   "dependencies": {
     "comlink": "^4.4.1"

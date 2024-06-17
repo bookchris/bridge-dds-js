@@ -1,12 +1,13 @@
-import { Dds, DealPbn, FutureTricks } from "bridge-dds";
+import DdsLoader, { Dds, DealPbn, FutureTricks } from "bridge-dds";
 import * as Comlink from "comlink";
 
 export class DdsWorker {
-  private dds: Dds;
+  private dds?: Dds;
 
   private async init() {
     if (!this.dds) {
-      this.dds = await Dds.fromFactory();
+      const module = await DdsLoader();
+      this.dds = new module.Dds();
     }
     return this.dds;
   }
