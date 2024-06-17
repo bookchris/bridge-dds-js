@@ -1,0 +1,4 @@
+[submodule "dds"]
+	path = dds
+	url = git@github.com:ed2k/dds.git
+	branch = wasm
