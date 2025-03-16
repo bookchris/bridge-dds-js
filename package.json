@@ -1,17 +1,17 @@
 {
   "name": "bridge-dds",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Duplicate bridge double dummy APIs in Javascript",
-  "main": "./dds.js",
-  "types": "./api.d.ts",
+  "main": "./index.js",
+  "types": "./index.d.ts",
   "scripts": {
     "build": "make"
   },
   "author": "Christopher Book",
   "license": "Apache-2.0",
   "files": [
-    "index.d.ts",
-    "dds.js"
+    "**/*.d.ts",
+    "**/*.js"
   ],
   "devDependencies": {
     "@types/emscripten": "^1.39.10",
