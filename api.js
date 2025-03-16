@@ -39,7 +39,7 @@ const futureTricksEqualsOffset = futureTricksRankOffset + sizeOfIntArray(13);
 const futureTricksScoreOffset = futureTricksEqualsOffset + sizeOfIntArray(13);
 const futureTricksSize = futureTricksScoreOffset + sizeOfIntArray(13);
 
-class Dds {
+export class Dds {
   constructor() {
     ccall("SetMaxThreads", null, ["number"], [0]);
   }
@@ -111,10 +111,8 @@ class Dds {
   }
 }
 
-class DdsError extends Error {
+export class DdsError extends Error {
   constructor(code) {
     super("DDS API error: " + code);
   }
 }
-
-Module.Dds = Dds;
