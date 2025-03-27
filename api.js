@@ -39,7 +39,7 @@ const futureTricksEqualsOffset = futureTricksRankOffset + sizeOfIntArray(13);
 const futureTricksScoreOffset = futureTricksEqualsOffset + sizeOfIntArray(13);
 const futureTricksSize = futureTricksScoreOffset + sizeOfIntArray(13);
 
-export class Dds {
+class Dds {
   constructor() {
     ccall("SetMaxThreads", null, ["number"], [0]);
   }
@@ -54,12 +54,12 @@ export class Dds {
       for (let i = 0; i < 3; i++) {
         setValue(
           dealpbn + dealPbnCurrentTrickSuitOffset + sizeOfInt * i,
-          dealPbn.currentTrickSuit[i],
+          dealPbn.currentTrickSuit[i] || 0,
           "i32"
         );
         setValue(
           dealpbn + dealPbnCurrentTrickRankOffset + sizeOfInt * i,
-          dealPbn.currentTrickRank[i],
+          dealPbn.currentTrickRank[i] || 0,
           "i32"
         );
       }
@@ -111,8 +111,10 @@ export class Dds {
   }
 }
 
-export class DdsError extends Error {
+class DdsError extends Error {
   constructor(code) {
     super("DDS API error: " + code);
   }
 }
+
+Module.Dds = Dds;
