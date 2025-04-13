@@ -1,6 +1,6 @@
 {
   "name": "bridge-dds",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Duplicate bridge double dummy APIs in Javascript",
   "main": "./index.js",
   "types": "./index.d.ts",

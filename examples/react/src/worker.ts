@@ -7,14 +7,20 @@ export class DdsWorker {
   private async init() {
     if (!this.dds) {
       const module = await DdsLoader();
+      //const module = await import("bridge-dds");
       this.dds = new module.Dds();
     }
     return this.dds;
   }
 
-  public async SolveBoardPBN(dealPbn: DealPbn): Promise<FutureTricks> {
+  public async SolveBoardPBN(
+    dealPbn: DealPbn,
+    target: number,
+    solutions: number,
+    mode: number
+  ): Promise<FutureTricks> {
     const dds = await this.init();
-    return dds.SolveBoardPBN(dealPbn);
+    return dds.SolveBoardPBN(dealPbn, target, solutions, mode);
   }
 }
 

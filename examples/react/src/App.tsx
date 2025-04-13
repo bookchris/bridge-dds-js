@@ -21,7 +21,7 @@ function Deal({
   const [value, setValue] = useState<FutureTricks>();
   const [error, setError] = useState<unknown>();
   useEffect(() => {
-    worker.SolveBoardPBN(deal).then(setValue).catch(setError);
+    worker.SolveBoardPBN(deal, 0, 3, 2).then(setValue).catch(setError);
   }, []);
 
   return error ? (
@@ -59,8 +59,8 @@ function App() {
     <div>
       <h1>examples</h1>
       <ul>
-        {deals.map((deal) => (
-          <li>
+        {deals.map((deal, i) => (
+          <li key={i}>
             <Deal deal={deal} worker={worker} />
           </li>
         ))}
