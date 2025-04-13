@@ -44,7 +44,7 @@ class Dds {
     ccall("SetMaxThreads", null, ["number"], [0]);
   }
 
-  SolveBoardPBN(dealPbn) {
+  SolveBoardPBN(dealPbn, target, solutions, mode) {
     const dealpbn = _malloc(dealPbnSize);
     const futp = _malloc(futureTricksSize);
 
@@ -76,7 +76,7 @@ class Dds {
           "number", // futp
           "number", // thrId
         ],
-        [dealpbn, -1, 3, 0, futp, 0]
+        [dealpbn, target, solutions, mode, futp, 0]
       );
       if (result != 1) {
         throw new DdsError(result);

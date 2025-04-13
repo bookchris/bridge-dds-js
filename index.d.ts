@@ -26,7 +26,12 @@ export interface FutureTricks {
 }
 export declare class Dds {
   constructor();
-  SolveBoardPBN(dealPbn: DealPbn): FutureTricks;
+  SolveBoardPBN(
+    dealPbn: DealPbn,
+    target: number,
+    solutions: number,
+    mode: number
+  ): FutureTricks;
 }
 declare const createModule: EmscriptenModuleFactory<DdsModule>;
 export default createModule;
