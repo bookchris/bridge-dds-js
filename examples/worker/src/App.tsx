@@ -1,22 +1,27 @@
-import DdsLoader, { Dds, DealPbn, Direction, Trump } from "bridge-dds";
+import { Dds, DealPbn, Direction, FutureTricks, Trump } from "bridge-dds";
+import * as Comlink from "comlink";
 import { useEffect, useMemo, useState } from "react";
 
-function useDds() {
-  const [dds, setDds] = useState<Dds>();
-  useEffect(() => {
-    DdsLoader().then((module) => setDds(new module.Dds()));
+function useDdsWorker() {
+  return useMemo(() => {
+    const worker = new Worker(new URL("./worker", import.meta.url), {
+      type: "module",
+    });
+    return Comlink.wrap<Dds>(worker);
   }, []);
-  return dds;
 }
 
-function Deal({ deal, dds }: { deal: DealPbn; dds: Dds }) {
-  const [value, error] = useMemo(() => {
-    try {
-      const value = dds.SolveBoardPBN(deal, -1, 3, 2);
-      return [value, undefined];
-    } catch (e: unknown) {
-      return [undefined, e];
-    }
+function Deal({
+  deal,
+  worker,
+}: {
+  deal: DealPbn;
+  worker: Comlink.Remote<Dds>;
+}) {
+  const [value, setValue] = useState<FutureTricks>();
+  const [error, setError] = useState<unknown>();
+  useEffect(() => {
+    worker.SolveBoardPBN(deal, -1, 3, 2).then(setValue).catch(setError);
   }, []);
 
   return error ? (
@@ -56,15 +61,7 @@ function App() {
       remainCards:
         "N:AKT74.A65.J96.84 J53.KQJT7.T75.97 .43.KQ32.AKJT653 Q9862.982.A84.Q2",
     },
-    // got {
-    // "nodes":105,
-    // "cards":10,
-    // "suit":[1,1,2,2,2,3,3,0,0,0],
-    // "rank":[13,7,5,7,10,7,9,3,5,11],
-    // "equals":[7168,0,0,0,0,0,0,0,0,0],
-    // "score":[3,3,1,1,1,1,1,1,1,1]}
-    //
-    // Trick 2
+    // Trick 2.
     {
       trump: 4,
       first: 1,
@@ -72,27 +69,17 @@ function App() {
       currentTrickSuit: [1],
       remainCards:
         "N:AKT74.A65.J96.84 J53.QJT7.T75.97 .43.KQ32.AKJT653 Q9862.982.A84.Q2",
-      // got {
-      // "nodes":105,
-      // "cards":10,
-      // "suit":[1,1,2,2,2,3,3,0,0,0],
-      // "rank":[13,7,5,7,10,7,9,3,5,11],
-      // "equals":[7168,0,0,0,0,0,0,0,0,0],
-      // "score":[3,3,1,1,1,1,1,1,1,1]}
     },
   ];
 
-  const dds = useDds();
-  if (!dds) {
-    return <div>Loading dds</div>;
-  }
+  const worker = useDdsWorker();
   return (
     <div>
       <h1>examples</h1>
       <ul>
         {deals.map((deal, i) => (
           <li key={i}>
-            <Deal deal={deal} dds={dds} />
+            <Deal deal={deal} worker={worker} />
           </li>
         ))}
       </ul>
