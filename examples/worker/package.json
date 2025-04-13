@@ -1,5 +1,5 @@
 {
-  "name": "example-react",
+  "name": "example-worker",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "bridge-dds": "*",
+    "comlink": "^4.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
