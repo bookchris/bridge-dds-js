@@ -7,7 +7,6 @@ export class DdsWorker {
   private async init() {
     if (!this.dds) {
       const module = await DdsLoader();
-      //const module = await import("bridge-dds");
       this.dds = new module.Dds();
     }
     return this.dds;

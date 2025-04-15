@@ -9,6 +9,7 @@ declare global {
   const _malloc: typeof Module._malloc;
   const _free: typeof Module._free;
 }
+
 export interface DealPbn {
   trump: number;
   first: number;
@@ -16,6 +17,11 @@ export interface DealPbn {
   currentTrickRank: number[];
   remainCards: string;
 }
+
+export interface PlayTracePbn {
+  cards: string;
+}
+
 export interface FutureTricks {
   nodes: number;
   cards: number;
@@ -24,14 +30,22 @@ export interface FutureTricks {
   equals: number[];
   score: number[];
 }
+
+export interface SolvedPlay {
+  tricks: number[];
+}
+
 export declare class Dds {
   constructor();
+
   SolveBoardPBN(
     dealPbn: DealPbn,
     target: number,
     solutions: number,
     mode: number
   ): FutureTricks;
+
+  AnalysePlayPBN(dealPbn: DealPbn, playTracePbn: PlayTracePbn): SolvedPlay;
 }
 declare const createModule: EmscriptenModuleFactory<DdsModule>;
 export default createModule;
