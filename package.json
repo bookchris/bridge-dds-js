@@ -1,6 +1,6 @@
 {
   "name": "bridge-dds",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Duplicate bridge double dummy APIs in Javascript",
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -20,6 +20,7 @@
     "typescript": "^5.4.2"
   },
   "workspaces": [
+    ".",
     "examples/react",
     "examples/worker"
   ]

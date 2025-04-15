@@ -39,31 +39,39 @@ const futureTricksEqualsOffset = futureTricksRankOffset + sizeOfIntArray(13);
 const futureTricksScoreOffset = futureTricksEqualsOffset + sizeOfIntArray(13);
 const futureTricksSize = futureTricksScoreOffset + sizeOfIntArray(13);
 
+/*
+struct playTracePBN
+{
+  int number;
+  char cards[106];
+};
+*/
+const playTracePbnNumberOffset = 0;
+const playTracePbnCardsOffset = playTracePbnNumberOffset + sizeOfInt;
+const playTracePbnSize = playTracePbnCardsOffset + 106;
+
+/*
+struct solvedPlay
+{
+  int number;
+  int tricks[53];
+};
+*/
+const solvedPlayNumberOffset = 0;
+const solvedPlayTricksOffset = solvedPlayNumberOffset + sizeOfInt;
+const solvedPlaySize = solvedPlayTricksOffset + sizeOfIntArray(53);
+
 class Dds {
   constructor() {
     ccall("SetMaxThreads", null, ["number"], [0]);
   }
 
   SolveBoardPBN(dealPbn, target, solutions, mode) {
-    const dealpbn = _malloc(dealPbnSize);
+    const dealPbnPtr = _malloc(dealPbnSize);
     const futp = _malloc(futureTricksSize);
 
     try {
-      setValue(dealpbn + dealPbnTrumpOffset, dealPbn.trump, "i32");
-      setValue(dealpbn + dealPbnFirstOffset, dealPbn.first, "i32");
-      for (let i = 0; i < 3; i++) {
-        setValue(
-          dealpbn + dealPbnCurrentTrickSuitOffset + sizeOfInt * i,
-          dealPbn.currentTrickSuit[i] || 0,
-          "i32"
-        );
-        setValue(
-          dealpbn + dealPbnCurrentTrickRankOffset + sizeOfInt * i,
-          dealPbn.currentTrickRank[i] || 0,
-          "i32"
-        );
-      }
-      stringToUTF8(dealPbn.remainCards, dealpbn + dealPbnRemainCardsOffset, 80);
+      dealPbnToPointer(dealPbn, dealPbnPtr);
 
       const result = ccall(
         "SolveBoardPBN",
@@ -76,7 +84,7 @@ class Dds {
           "number", // futp
           "number", // thrId
         ],
-        [dealpbn, target, solutions, mode, futp, 0]
+        [dealPbnPtr, target, solutions, mode, futp, 0]
       );
       if (result != 1) {
         throw new DdsError(result);
@@ -105,8 +113,49 @@ class Dds {
       }
       return futureTricks;
     } finally {
-      _free(dealpbn);
+      _free(dealPbnPtr);
       _free(futp);
+    }
+  }
+
+  AnalysePlayPBN(dealPbn, playPbn) {
+    const dealPbnPtr = _malloc(dealPbnSize);
+    const playPbnPtr = _malloc(playTracePbnSize);
+    const solvedPlayPtr = _malloc(solvedPlaySize);
+
+    try {
+      dealPbnToPointer(dealPbn, dealPbnPtr);
+      playPbnToPointer(playPbn, playPbnPtr);
+
+      const result = ccall(
+        "AnalysePlayPBN",
+        "number",
+        [
+          "number", // dealPbnPtr
+          "number", // playPbnPtr
+          "number", // solvedPlayPtr
+          "number", // thrId
+        ],
+        [dealPbnPtr, playPbnPtr, solvedPlayPtr, 0]
+      );
+      if (result != 1) {
+        throw new DdsError(result);
+      }
+      const number = getValue(solvedPlayPtr + solvedPlayNumberOffset, "i32");
+      const solvedPlay = { tricks: [] };
+      for (let i = 0; i < number; i++) {
+        solvedPlay.tricks.push(
+          getValue(
+            solvedPlayPtr + solvedPlayTricksOffset + sizeOfInt * i,
+            "i32"
+          )
+        );
+      }
+      return solvedPlay;
+    } finally {
+      _free(dealPbnPtr);
+      _free(playPbnPtr);
+      _free(solvedPlayPtr);
     }
   }
 }
@@ -118,3 +167,30 @@ class DdsError extends Error {
 }
 
 Module.Dds = Dds;
+
+function dealPbnToPointer(dealPbn, dealPbnPtr) {
+  setValue(dealPbnPtr + dealPbnTrumpOffset, dealPbn.trump, "i32");
+  setValue(dealPbnPtr + dealPbnFirstOffset, dealPbn.first, "i32");
+  for (let i = 0; i < 3; i++) {
+    setValue(
+      dealPbnPtr + dealPbnCurrentTrickSuitOffset + sizeOfInt * i,
+      dealPbn.currentTrickSuit[i] || 0,
+      "i32"
+    );
+    setValue(
+      dealPbnPtr + dealPbnCurrentTrickRankOffset + sizeOfInt * i,
+      dealPbn.currentTrickRank[i] || 0,
+      "i32"
+    );
+  }
+  stringToUTF8(dealPbn.remainCards, dealPbnPtr + dealPbnRemainCardsOffset, 80);
+}
+
+function playPbnToPointer(playPbn, playPbnPtr) {
+  setValue(
+    playPbnPtr + playTracePbnNumberOffset,
+    playPbn.cards.length / 2,
+    "i32"
+  );
+  stringToUTF8(playPbn.cards, playPbnPtr + playTracePbnCardsOffset, 106);
+}
