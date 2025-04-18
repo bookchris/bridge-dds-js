@@ -1,4 +1,12 @@
-import DdsLoader, { Dds, DealPbn, FutureTricks } from "bridge-dds";
+import DdsLoader, {
+  Dds,
+  DdTableDealPbn,
+  DdTableResults,
+  DealPbn,
+  FutureTricks,
+  PlayTracePbn,
+  SolvedPlay,
+} from "bridge-dds";
 import * as Comlink from "comlink";
 
 export class DdsWorker {
@@ -10,6 +18,21 @@ export class DdsWorker {
       this.dds = new module.Dds();
     }
     return this.dds;
+  }
+
+  public async AnalysePlayPBN(
+    dealPbn: DealPbn,
+    playTracePbn: PlayTracePbn
+  ): Promise<SolvedPlay> {
+    const dds = await this.init();
+    return dds.AnalysePlayPBN(dealPbn, playTracePbn);
+  }
+
+  public async CalcDDTablePBN(
+    ddTableDealPbn: DdTableDealPbn
+  ): Promise<DdTableResults> {
+    const dds = await this.init();
+    return dds.CalcDDTablePBN(ddTableDealPbn);
   }
 
   public async SolveBoardPBN(

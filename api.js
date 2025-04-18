@@ -61,9 +61,68 @@ const solvedPlayNumberOffset = 0;
 const solvedPlayTricksOffset = solvedPlayNumberOffset + sizeOfInt;
 const solvedPlaySize = solvedPlayTricksOffset + sizeOfIntArray(53);
 
+/*
+struct ddTableDealPBN
+{
+  char cards[80];
+};
+*/
+const ddTableDealPbnCardsOffset = 0;
+const ddTableDealPbnSize = ddTableDealPbnCardsOffset + 80;
+
+/*
+struct ddTableResults
+{
+  int resTable[DDS_STRAINS][DDS_HANDS];
+};
+*/
+const ddTableResultsResTableOffset = 0;
+const ddTableResultsSize = ddTableResultsResTableOffset + sizeOfIntArray(5 * 4);
+
+const ddsNumStrains = 5;
+const ddsNumSeats = 4;
+
 class Dds {
   constructor() {
     ccall("SetMaxThreads", null, ["number"], [0]);
+  }
+
+  CalcDDTablePBN(ddTableDealPbn) {
+    const ddTableDealPbnPtr = _malloc(ddTableDealPbnSize);
+    const ddTableResultsPtr = _malloc(ddTableResultsSize);
+
+    try {
+      ddTableDealPbnToPointer(ddTableDealPbn, ddTableDealPbnPtr);
+
+      const result = ccall(
+        "CalcDDtablePBN",
+        "number",
+        [
+          "number", // ddTableDealPbnPtr
+          "number", // ddTableResultsPtr
+        ],
+        [ddTableDealPbnPtr, ddTableResultsPtr]
+      );
+      if (result != 1) {
+        throw new DdsError(result);
+      }
+      const ddTableResults = {
+        resTable: [...Array(ddsNumStrains).keys()].map((strain) =>
+          [...Array(ddsNumSeats).keys()].map((hand) =>
+            getValue(
+              ddTableResultsPtr +
+                ddTableResultsResTableOffset +
+                sizeOfIntArray(strain * ddsNumSeats + hand),
+              "i32"
+            )
+          )
+        ),
+      };
+      return ddTableResults;
+    } finally {
+      _free(ddTableDealPbnPtr);
+      _free(ddTableResultsPtr);
+    }
   }
 
   SolveBoardPBN(dealPbn, target, solutions, mode) {
@@ -193,4 +252,12 @@ function playPbnToPointer(playPbn, playPbnPtr) {
     "i32"
   );
   stringToUTF8(playPbn.cards, playPbnPtr + playTracePbnCardsOffset, 106);
+}
+
+function ddTableDealPbnToPointer(ddTableDealPbn, ddTableDealPbnPtr) {
+  stringToUTF8(
+    ddTableDealPbn.cards,
+    ddTableDealPbnPtr + ddTableDealPbnCardsOffset,
+    80
+  );
 }

@@ -35,8 +35,18 @@ export interface SolvedPlay {
   tricks: number[];
 }
 
+export interface DdTableDealPbn {
+  cards: string;
+}
+
+export interface DdTableResults {
+  resTable: number[][];
+}
+
 export declare class Dds {
   constructor();
+
+  CalcDDTablePBN(ddTableDealPbn: DdTableDealPbn): DdTableResults;
 
   SolveBoardPBN(
     dealPbn: DealPbn,
