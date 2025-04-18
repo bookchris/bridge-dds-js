@@ -1,6 +1,20 @@
-import { Dds, DealPbn, Direction, FutureTricks, Trump } from "bridge-dds";
+import {
+  Dds,
+  DdTableDealPbn,
+  DdTableResults,
+  DealPbn,
+  FutureTricks,
+  PlayTracePbn,
+  SolvedPlay,
+} from "bridge-dds";
 import * as Comlink from "comlink";
 import { useEffect, useMemo, useState } from "react";
+import { ddsErrorMessage } from "../../common/error";
+import {
+  analyzePlayPBNExamples,
+  calcDDTablePBNExamples,
+  solveBoardPBNExamples,
+} from "../../common/testdata";
 
 function useDdsWorker() {
   return useMemo(() => {
@@ -11,21 +25,67 @@ function useDdsWorker() {
   }, []);
 }
 
-function Deal({
+function CalcDDTablePBNExample({
   deal,
-  worker,
+  dds,
+}: {
+  deal: DdTableDealPbn;
+  dds: Comlink.Remote<Dds>;
+}) {
+  const [value, setValue] = useState<DdTableResults>();
+  const [error, setError] = useState<unknown>();
+  useEffect(() => {
+    dds.CalcDDTablePBN(deal).then(setValue).catch(setError);
+  }, []);
+
+  return error ? (
+    <div>error: {ddsErrorMessage(error)}</div>
+  ) : !value ? (
+    <div>loading</div>
+  ) : (
+    <div>solution {JSON.stringify(value)}</div>
+  );
+}
+
+function SolveBoardPBNExample({
+  deal,
+  dds,
 }: {
   deal: DealPbn;
-  worker: Comlink.Remote<Dds>;
+  dds: Comlink.Remote<Dds>;
 }) {
   const [value, setValue] = useState<FutureTricks>();
   const [error, setError] = useState<unknown>();
   useEffect(() => {
-    worker.SolveBoardPBN(deal, -1, 3, 2).then(setValue).catch(setError);
+    dds.SolveBoardPBN(deal, -1, 3, 2).then(setValue).catch(setError);
   }, []);
 
   return error ? (
-    <div>error {JSON.stringify(error)}</div>
+    <div>error: {ddsErrorMessage(error)}</div>
+  ) : !value ? (
+    <div>loading</div>
+  ) : (
+    <div>solution {JSON.stringify(value)}</div>
+  );
+}
+
+function AnalyzePlayPBNExample({
+  deal,
+  play,
+  dds,
+}: {
+  deal: DealPbn;
+  play: PlayTracePbn;
+  dds: Comlink.Remote<Dds>;
+}) {
+  const [value, setValue] = useState<SolvedPlay>();
+  const [error, setError] = useState<unknown>();
+  useEffect(() => {
+    dds.AnalysePlayPBN(deal, play).then(setValue).catch(setError);
+  }, []);
+
+  return error ? (
+    <div>error: {ddsErrorMessage(error)}</div>
   ) : !value ? (
     <div>loading</div>
   ) : (
@@ -34,67 +94,30 @@ function Deal({
 }
 
 function App() {
-  const deals: DealPbn[] = [
-    // Random hand.
-    {
-      trump: Trump.NoTrump,
-      first: Direction.North,
-      currentTrickRank: [3, 8, 10],
-      currentTrickSuit: [3, 1, 0],
-      remainCards: "S:.4.KQ32.3 Q8.98.A8. AKT..J96. J.QJT7.T.",
-    },
-    // Expensive hand to solve.
-    {
-      trump: Trump.Spades,
-      first: Direction.West,
-      currentTrickRank: [],
-      currentTrickSuit: [],
-      remainCards:
-        "S:Q853.AJ962.KT74. AJ962.KT74..Q853 KT74..Q853.AJ962 .Q853.AJ962.KT74",
-    },
-    // Trick 1.
-    {
-      trump: 4,
-      first: 1,
-      currentTrickRank: [],
-      currentTrickSuit: [],
-      remainCards:
-        "N:AKT74.A65.J96.84 J53.KQJT7.T75.97 .43.KQ32.AKJT653 Q9862.982.A84.Q2",
-    },
-    // got {
-    // "nodes":105,
-    // "cards":10,
-    // "suit":[1,1,2,2,2,3,3,0,0,0],
-    // "rank":[13,7,5,7,10,7,9,3,5,11],
-    // "equals":[7168,0,0,0,0,0,0,0,0,0],
-    // "score":[3,3,1,1,1,1,1,1,1,1]}
-    //
-    // Trick 2
-    {
-      trump: 4,
-      first: 1,
-      currentTrickRank: [13],
-      currentTrickSuit: [1],
-      remainCards:
-        "N:AKT74.A65.J96.84 J53.QJT7.T75.97 .43.KQ32.AKJT653 Q9862.982.A84.Q2",
-      // got {
-      // "nodes":105,
-      // "cards":10,
-      // "suit":[1,1,2,2,2,3,3,0,0,0],
-      // "rank":[13,7,5,7,10,7,9,3,5,11],
-      // "equals":[7168,0,0,0,0,0,0,0,0,0],
-      // "score":[3,3,1,1,1,1,1,1,1,1]}
-    },
-  ];
-
-  const worker = useDdsWorker();
+  const dds = useDdsWorker();
   return (
     <div>
-      <h1>examples</h1>
+      <h1>AnalyzePlayPBN examples</h1>
       <ul>
-        {deals.map((deal, i) => (
+        {analyzePlayPBNExamples.map(({ deal, play }, i) => (
           <li key={i}>
-            <Deal deal={deal} worker={worker} />
+            <AnalyzePlayPBNExample deal={deal} play={play} dds={dds} />
+          </li>
+        ))}
+      </ul>
+      <h1>CalcDDTablePBN examples</h1>
+      <ul>
+        {calcDDTablePBNExamples.map((deal, i) => (
+          <li key={i}>
+            <CalcDDTablePBNExample deal={deal} dds={dds} />
+          </li>
+        ))}
+      </ul>
+      <h1>SolveBoardPBN examples</h1>
+      <ul>
+        {solveBoardPBNExamples.map((deal, i) => (
+          <li key={i}>
+            <SolveBoardPBNExample deal={deal} dds={dds} />
           </li>
         ))}
       </ul>
