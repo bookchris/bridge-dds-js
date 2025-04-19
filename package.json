@@ -1,18 +1,21 @@
 {
   "name": "bridge-dds",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "Duplicate bridge double dummy APIs in Javascript",
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "main": "./dist/api.js",
+  "types": "./dist/api.d.ts",
+  "files": [
+    "dist/**/*.d.ts",
+    "dist/**/*.js"
+  ],
   "scripts": {
-    "build": "make"
+    "build": "npm run build-lib && npm run build-api && npm run copy-lib",
+    "build-lib": "make",
+    "build-api": "tsc",
+    "copy-lib": "node -e \"require('fs').cpSync('./lib', './dist/lib', {recursive: true});\""
   },
   "author": "Christopher Book",
   "license": "Apache-2.0",
-  "files": [
-    "**/*.d.ts",
-    "**/*.js"
-  ],
   "devDependencies": {
     "@types/emscripten": "^1.39.10",
     "@types/node": "^20.11.28",

@@ -1,7 +1,9 @@
-import DdsLoader, {
+import {
   Dds,
+  DdsModule,
   DdTableDealPbn,
   DealPbn,
+  loadDds,
   PlayTracePbn,
 } from "bridge-dds";
 import { useEffect, useMemo, useState } from "react";
@@ -15,7 +17,7 @@ import {
 function useDds() {
   const [dds, setDds] = useState<Dds>();
   useEffect(() => {
-    DdsLoader().then((module) => setDds(new module.Dds()));
+    loadDds().then((module: DdsModule) => setDds(new Dds(module)));
   }, []);
   return dds;
 }
