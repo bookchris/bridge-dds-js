@@ -1,9 +1,10 @@
-import DdsLoader, {
+import {
   Dds,
   DdTableDealPbn,
   DdTableResults,
   DealPbn,
   FutureTricks,
+  loadDds,
   PlayTracePbn,
   SolvedPlay,
 } from "bridge-dds";
@@ -14,8 +15,8 @@ export class DdsWorker {
 
   private async init() {
     if (!this.dds) {
-      const module = await DdsLoader();
-      this.dds = new module.Dds();
+      const module = await loadDds();
+      this.dds = new Dds(module);
     }
     return this.dds;
   }
