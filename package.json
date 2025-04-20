@@ -1,6 +1,6 @@
 {
   "name": "bridge-dds",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Duplicate bridge double dummy APIs in Javascript",
   "main": "./dist/api.js",
   "types": "./dist/api.d.ts",
@@ -26,5 +26,9 @@
     ".",
     "examples/react",
     "examples/worker"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bookchris/bridge-dds-js.git"
+  }
 }
