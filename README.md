@@ -19,13 +19,14 @@ The following APIs are currently supported, but ping me if you are looking for o
 
 - AnalysePlayPBN
 - CalcDDTablePBN
+- DealerPar
 - SolveBoardPBN
 
 ```
-import DdsLoader, { Dds, DealPbn, FutureTricks } from "bridge-dds";
+import DdsLoader, { Dds, DealPbn, FutureTricks, loadDds } from "bridge-dds";
 
-const module = await DdsLoader();
-const dds: Dds = new module.Dds();
+const module = await loadDds();
+const dds = new Dds(module);
 const result = dds.SolveBoardPBN({ ... });
 ```
 

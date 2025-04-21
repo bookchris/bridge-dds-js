@@ -19,31 +19,43 @@ export class Dds {
       const result = this.module.ccall(
         "CalcDDtablePBN",
         "number",
-        [
-          "number", // ddTableDealPbnPtr
-          "number", // ddTableResultsPtr
-        ],
+        ["number", "number"],
         [ddTableDealPbnPtr, ddTableResultsPtr]
       );
       if (result != 1) {
         throw new DdsError(result);
       }
-      const ddTableResults = {
-        resTable: [...Array(ddsNumStrains).keys()].map((strain) =>
-          [...Array(ddsNumSeats).keys()].map((hand) =>
-            this.module.getValue(
-              ddTableResultsPtr +
-                ddTableResultsResTableOffset +
-                sizeOfIntArray(strain * ddsNumSeats + hand),
-              "i32"
-            )
-          )
-        ),
-      };
-      return ddTableResults;
+      return this.#pointerToDdTableResults(ddTableResultsPtr);
     } finally {
       this.module._free(ddTableDealPbnPtr);
       this.module._free(ddTableResultsPtr);
+    }
+  }
+
+  DealerPar(
+    ddTableResults: DdTableResults,
+    dealer: number,
+    vulnerable: number
+  ): ParResultsDealer {
+    const ddTableResultsPtr = this.module._malloc(ddTableResultsSize);
+    const parResultsDealerPtr = this.module._malloc(parResultsDealerSize);
+
+    try {
+      this.#ddTableResultsToPointer(ddTableResults, ddTableResultsPtr);
+
+      const result = this.module.ccall(
+        "DealerPar",
+        "number",
+        ["number", "number", "number", "number"],
+        [ddTableResultsPtr, parResultsDealerPtr, dealer, vulnerable]
+      );
+      if (result != 1) {
+        throw new DdsError(result);
+      }
+      return this.#pointerToParResultsDealer(parResultsDealerPtr);
+    } finally {
+      this.module._free(ddTableResultsPtr);
+      this.module._free(parResultsDealerPtr);
     }
   }
 
@@ -54,7 +66,7 @@ export class Dds {
     mode: number
   ): FutureTricks {
     const dealPbnPtr = this.module._malloc(dealPbnSize);
-    const futp = this.module._malloc(futureTricksSize);
+    const futureTricksPtr = this.module._malloc(futureTricksSize);
 
     try {
       this.#dealPbnToPointer(dealPbn, dealPbnPtr);
@@ -62,57 +74,16 @@ export class Dds {
       const result = this.module.ccall(
         "SolveBoardPBN",
         "number",
-        [
-          "number", // dealpbn
-          "number", // target
-          "number", // solutions
-          "number", // mode
-          "number", // futp
-          "number", // thrId
-        ],
-        [dealPbnPtr, target, solutions, mode, futp, 0]
+        ["number", "number", "number", "number", "number", "number"],
+        [dealPbnPtr, target, solutions, mode, futureTricksPtr, 0]
       );
       if (result != 1) {
         throw new DdsError(result);
       }
-      const futureTricks: FutureTricks = {
-        nodes: this.module.getValue(futp + futureTricksNodesOffset, "i32"),
-        cards: this.module.getValue(futp + futureTricksCardsOffset, "i32"),
-        suit: [],
-        rank: [],
-        equals: [],
-        score: [],
-      };
-      for (let i = 0; i < futureTricks.cards; i++) {
-        futureTricks.suit.push(
-          this.module.getValue(
-            futp + futureTricksSuitOffset + sizeOfInt * i,
-            "i32"
-          )
-        );
-        futureTricks.rank.push(
-          this.module.getValue(
-            futp + futureTricksRankOffset + sizeOfInt * i,
-            "i32"
-          )
-        );
-        futureTricks.equals.push(
-          this.module.getValue(
-            futp + futureTricksEqualsOffset + sizeOfInt * i,
-            "i32"
-          )
-        );
-        futureTricks.score.push(
-          this.module.getValue(
-            futp + futureTricksScoreOffset + sizeOfInt * i,
-            "i32"
-          )
-        );
-      }
-      return futureTricks;
+      return this.#pointerToFutureTricks(futureTricksPtr);
     } finally {
       this.module._free(dealPbnPtr);
-      this.module._free(futp);
+      this.module._free(futureTricksPtr);
     }
   }
 
@@ -128,36 +99,51 @@ export class Dds {
       const result = this.module.ccall(
         "AnalysePlayPBN",
         "number",
-        [
-          "number", // dealPbnPtr
-          "number", // playPbnPtr
-          "number", // solvedPlayPtr
-          "number", // thrId
-        ],
+        ["number", "number", "number", "number"],
         [dealPbnPtr, playPbnPtr, solvedPlayPtr, 0]
       );
       if (result != 1) {
         throw new DdsError(result);
       }
-      const number = this.module.getValue(
-        solvedPlayPtr + solvedPlayNumberOffset,
-        "i32"
-      );
-      const solvedPlay: SolvedPlay = { tricks: [] };
-      for (let i = 0; i < number; i++) {
-        solvedPlay.tricks.push(
-          this.module.getValue(
-            solvedPlayPtr + solvedPlayTricksOffset + sizeOfInt * i,
-            "i32"
-          )
-        );
-      }
-      return solvedPlay;
+      return this.#pointerToSolvedPlay(solvedPlayPtr);
     } finally {
       this.module._free(dealPbnPtr);
       this.module._free(playPbnPtr);
       this.module._free(solvedPlayPtr);
     }
+  }
+
+  #pointerToDdTableResults(ddTableResultsPtr: number): DdTableResults {
+    const ddTableResults: DdTableResults = {
+      resTable: [...Array(ddsNumStrains).keys()].map((strain) =>
+        [...Array(ddsNumSeats).keys()].map((hand) =>
+          this.module.getValue(
+            ddTableResultsPtr +
+              ddTableResultsResTableOffset +
+              sizeOfIntArray(strain * ddsNumSeats + hand),
+            "i32"
+          )
+        )
+      ),
+    };
+    return ddTableResults;
+  }
+
+  #ddTableResultsToPointer(
+    ddTableResults: DdTableResults,
+    ddTableResultsPtr: number
+  ) {
+    [...Array(ddsNumStrains).keys()].forEach((strain) =>
+      [...Array(ddsNumSeats).keys()].forEach((hand) => {
+        this.module.setValue(
+          ddTableResultsPtr +
+            ddTableResultsResTableOffset +
+            sizeOfIntArray(strain * ddsNumSeats + hand),
+          ddTableResults.resTable[strain][hand],
+          "i32"
+        );
+      })
+    );
   }
 
   #dealPbnToPointer(dealPbn: DealPbn, dealPbnPtr: number) {
@@ -205,6 +191,90 @@ export class Dds {
       80
     );
   }
+
+  #pointerToParResultsDealer(parResultsDealerPtr: number): ParResultsDealer {
+    const number = this.module.getValue(
+      parResultsDealerPtr + parResultsDealerNumberOffset,
+      "i32"
+    );
+    const parResultsDealer: ParResultsDealer = {
+      score: this.module.getValue(
+        parResultsDealerPtr + parResultsDealerScoreOffset,
+        "i32"
+      ),
+      contracts: [],
+    };
+    for (let i = 0; i < number; i++) {
+      parResultsDealer.contracts.push(
+        this.module.UTF8ToString(
+          parResultsDealerPtr + parResultsDealerContractsOffset + i * 10,
+          10
+        )
+      );
+    }
+    return parResultsDealer;
+  }
+
+  #pointerToSolvedPlay(solvedPlayPtr: number): SolvedPlay {
+    const number = this.module.getValue(
+      solvedPlayPtr + solvedPlayNumberOffset,
+      "i32"
+    );
+    const solvedPlay: SolvedPlay = { tricks: [] };
+    for (let i = 0; i < number; i++) {
+      solvedPlay.tricks.push(
+        this.module.getValue(
+          solvedPlayPtr + solvedPlayTricksOffset + sizeOfInt * i,
+          "i32"
+        )
+      );
+    }
+    return solvedPlay;
+  }
+
+  #pointerToFutureTricks(futureTricksPtr: number): FutureTricks {
+    const futureTricks: FutureTricks = {
+      nodes: this.module.getValue(
+        futureTricksPtr + futureTricksNodesOffset,
+        "i32"
+      ),
+      cards: this.module.getValue(
+        futureTricksPtr + futureTricksCardsOffset,
+        "i32"
+      ),
+      suit: [],
+      rank: [],
+      equals: [],
+      score: [],
+    };
+    for (let i = 0; i < futureTricks.cards; i++) {
+      futureTricks.suit.push(
+        this.module.getValue(
+          futureTricksPtr + futureTricksSuitOffset + sizeOfInt * i,
+          "i32"
+        )
+      );
+      futureTricks.rank.push(
+        this.module.getValue(
+          futureTricksPtr + futureTricksRankOffset + sizeOfInt * i,
+          "i32"
+        )
+      );
+      futureTricks.equals.push(
+        this.module.getValue(
+          futureTricksPtr + futureTricksEqualsOffset + sizeOfInt * i,
+          "i32"
+        )
+      );
+      futureTricks.score.push(
+        this.module.getValue(
+          futureTricksPtr + futureTricksScoreOffset + sizeOfInt * i,
+          "i32"
+        )
+      );
+    }
+    return futureTricks;
+  }
 }
 
 export class DdsError extends Error {
@@ -246,6 +316,11 @@ export interface DdTableResults {
   resTable: number[][];
 }
 
+export interface ParResultsDealer {
+  score: number;
+  contracts: string[];
+}
+
 export const Trump = {
   Spades: 0,
   Hearts: 1,
@@ -259,6 +334,13 @@ export const Direction = {
   East: 1,
   South: 2,
   West: 3,
+};
+
+export const Vulnerable = {
+  None: 0,
+  Both: 1,
+  NorthSouth: 2,
+  EastWest: 3,
 };
 
 const sizeOfInt = 4;
@@ -344,3 +426,16 @@ const ddTableResultsSize = ddTableResultsResTableOffset + sizeOfIntArray(5 * 4);
 
 const ddsNumStrains = 5;
 const ddsNumSeats = 4;
+
+/*
+struct parResultsDealer
+{
+  int number;
+  int score;
+  char contracts[10][10];
+};
+*/
+const parResultsDealerNumberOffset = 0;
+const parResultsDealerScoreOffset = parResultsDealerNumberOffset + sizeOfInt;
+const parResultsDealerContractsOffset = parResultsDealerScoreOffset + sizeOfInt;
+const parResultsDealerSize = parResultsDealerContractsOffset + 10 * 10;

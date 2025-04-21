@@ -5,6 +5,7 @@ export interface DdsModule extends EmscriptenModule {
   getValue: typeof getValue;
   setValue: typeof setValue;
   stringToUTF8: typeof stringToUTF8;
+  UTF8ToString: typeof UTF8ToString;
 }
 
 declare const createModule: EmscriptenModuleFactory<DdsModule>;
