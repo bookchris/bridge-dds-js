@@ -1,15 +1,15 @@
 import {
   Dds,
   DdTableDealPbn,
-  DdTableResults,
   DealPbn,
-  FutureTricks,
+  Direction,
   PlayTracePbn,
-  SolvedPlay,
+  Vulnerable,
 } from "bridge-dds";
 import * as Comlink from "comlink";
 import { useEffect, useMemo, useState } from "react";
-import { ddsErrorMessage } from "../../common/error";
+import { ExampleHeading } from "../../common/ExampleHeading";
+import { ExampleOutput } from "../../common/ExampleOutput";
 import {
   analyzePlayPBNExamples,
   calcDDTablePBNExamples,
@@ -25,71 +25,70 @@ function useDdsWorker() {
   }, []);
 }
 
-function CalcDDTablePBNExample({
-  deal,
-  dds,
-}: {
-  deal: DdTableDealPbn;
-  dds: Comlink.Remote<Dds>;
-}) {
-  const [value, setValue] = useState<DdTableResults>();
+function useAsyncApi<T>(func: () => Promise<T>): {
+  output?: T;
+  error?: unknown;
+} {
+  const [output, setOutput] = useState<T>();
   const [error, setError] = useState<unknown>();
   useEffect(() => {
-    dds.CalcDDTablePBN(deal).then(setValue).catch(setError);
+    func().then(setOutput).catch(setError);
   }, []);
+  return { output, error };
+}
 
-  return error ? (
-    <div>error: {ddsErrorMessage(error)}</div>
-  ) : !value ? (
-    <div>loading</div>
-  ) : (
-    <div>solution {JSON.stringify(value)}</div>
+function CalcDDTablePBNExample({
+  ddTableDealPbn,
+  dds,
+}: {
+  ddTableDealPbn: DdTableDealPbn;
+  dds: Comlink.Remote<Dds>;
+}) {
+  const { output, error } = useAsyncApi(async () => {
+    const ddTableResults = await dds.CalcDDTablePBN(ddTableDealPbn);
+    const parResultsDealer = await dds.DealerPar(
+      ddTableResults,
+      Direction.North,
+      Vulnerable.EastWest
+    );
+    return { ddTableResults, parResultsDealer };
+  });
+  return (
+    <ExampleOutput input={{ ddTableDealPbn }} output={output} error={error} />
   );
 }
 
 function SolveBoardPBNExample({
-  deal,
+  dealPbn,
   dds,
 }: {
-  deal: DealPbn;
+  dealPbn: DealPbn;
   dds: Comlink.Remote<Dds>;
 }) {
-  const [value, setValue] = useState<FutureTricks>();
-  const [error, setError] = useState<unknown>();
-  useEffect(() => {
-    dds.SolveBoardPBN(deal, -1, 3, 2).then(setValue).catch(setError);
-  }, []);
-
-  return error ? (
-    <div>error: {ddsErrorMessage(error)}</div>
-  ) : !value ? (
-    <div>loading</div>
-  ) : (
-    <div>solution {JSON.stringify(value)}</div>
+  const { output, error } = useAsyncApi(() =>
+    dds.SolveBoardPBN(dealPbn, -1, 3, 2)
   );
+  return <ExampleOutput input={{ dealPbn }} output={output} error={error} />;
 }
 
 function AnalyzePlayPBNExample({
-  deal,
-  play,
+  dealPbn,
+  playTracePbn,
   dds,
 }: {
-  deal: DealPbn;
-  play: PlayTracePbn;
+  dealPbn: DealPbn;
+  playTracePbn: PlayTracePbn;
   dds: Comlink.Remote<Dds>;
 }) {
-  const [value, setValue] = useState<SolvedPlay>();
-  const [error, setError] = useState<unknown>();
-  useEffect(() => {
-    dds.AnalysePlayPBN(deal, play).then(setValue).catch(setError);
-  }, []);
-
-  return error ? (
-    <div>error: {ddsErrorMessage(error)}</div>
-  ) : !value ? (
-    <div>loading</div>
-  ) : (
-    <div>solution {JSON.stringify(value)}</div>
+  const { output, error } = useAsyncApi(() =>
+    dds.AnalysePlayPBN(dealPbn, playTracePbn)
+  );
+  return (
+    <ExampleOutput
+      input={{ dealPbn, playTracePbn }}
+      output={output}
+      error={error}
+    />
   );
 }
 
@@ -98,29 +97,23 @@ function App() {
   return (
     <div>
       <h1>AnalyzePlayPBN examples</h1>
-      <ul>
-        {analyzePlayPBNExamples.map(({ deal, play }, i) => (
-          <li key={i}>
-            <AnalyzePlayPBNExample deal={deal} play={play} dds={dds} />
-          </li>
-        ))}
-      </ul>
-      <h1>CalcDDTablePBN examples</h1>
-      <ul>
-        {calcDDTablePBNExamples.map((deal, i) => (
-          <li key={i}>
-            <CalcDDTablePBNExample deal={deal} dds={dds} />
-          </li>
-        ))}
-      </ul>
+      {analyzePlayPBNExamples.map((inputs, i) => (
+        <ExampleHeading key={i} i={i}>
+          <AnalyzePlayPBNExample {...inputs} dds={dds} />
+        </ExampleHeading>
+      ))}
+      <h1>CalcDDTablePBN / ParDealer examples</h1>
+      {calcDDTablePBNExamples.map((inputs, i) => (
+        <ExampleHeading key={i} i={i}>
+          <CalcDDTablePBNExample {...inputs} dds={dds} />
+        </ExampleHeading>
+      ))}
       <h1>SolveBoardPBN examples</h1>
-      <ul>
-        {solveBoardPBNExamples.map((deal, i) => (
-          <li key={i}>
-            <SolveBoardPBNExample deal={deal} dds={dds} />
-          </li>
-        ))}
-      </ul>
+      {solveBoardPBNExamples.map((inputs, i) => (
+        <ExampleHeading key={i} i={i}>
+          <SolveBoardPBNExample {...inputs} dds={dds} />
+        </ExampleHeading>
+      ))}
     </div>
   );
 }

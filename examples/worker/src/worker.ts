@@ -5,6 +5,7 @@ import {
   DealPbn,
   FutureTricks,
   loadDds,
+  ParResultsDealer,
   PlayTracePbn,
   SolvedPlay,
 } from "bridge-dds";
@@ -34,6 +35,15 @@ export class DdsWorker {
   ): Promise<DdTableResults> {
     const dds = await this.init();
     return dds.CalcDDTablePBN(ddTableDealPbn);
+  }
+
+  public async DealerPar(
+    ddTableResults: DdTableResults,
+    dealer: number,
+    vulnerable: number
+  ): Promise<ParResultsDealer> {
+    const dds = await this.init();
+    return dds.DealerPar(ddTableResults, dealer, vulnerable);
   }
 
   public async SolveBoardPBN(
