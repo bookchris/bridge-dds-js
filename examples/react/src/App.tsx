@@ -66,7 +66,7 @@ function SolveBoardPBNExample({
   dds: Dds;
 }) {
   const { output, error } = useSyncApi(() =>
-    dds.SolveBoardPBN(dealPbn, -1, 3, 2)
+    dds.SolveBoardPBN(dealPbn, -1, 3, 1)
   );
   return <ExampleOutput input={{ dealPbn }} output={output} error={error} />;
 }
@@ -101,19 +101,19 @@ function App() {
     <div>
       <h1>AnalyzePlayPBN examples</h1>
       {analyzePlayPBNExamples.map((inputs, i) => (
-        <ExampleHeading key={i} i={i}>
+        <ExampleHeading key={i} i={i} label={inputs.label}>
           <AnalyzePlayPBNExample {...inputs} dds={dds} />
         </ExampleHeading>
       ))}
       <h1>CalcDDTablePBN / ParDealer examples</h1>
       {calcDDTablePBNExamples.map((inputs, i) => (
-        <ExampleHeading key={i} i={i}>
+        <ExampleHeading key={i} i={i} label={inputs.label}>
           <CalcDDTablePBNExample {...inputs} dds={dds} />
         </ExampleHeading>
       ))}
       <h1>SolveBoardPBN examples</h1>
       {solveBoardPBNExamples.map((inputs, i) => (
-        <ExampleHeading key={i} i={i}>
+        <ExampleHeading key={i} i={i} label={inputs.label}>
           <SolveBoardPBNExample {...inputs} dds={dds} />
         </ExampleHeading>
       ))}

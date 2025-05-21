@@ -2,14 +2,18 @@ import { ReactNode } from "react";
 
 export function ExampleHeading({
   i,
+  label,
   children,
 }: {
   i: number;
+  label: string;
   children: ReactNode;
 }) {
   return (
     <p>
-      #{i + 1}
+      <b>
+        #{i + 1}: {label}
+      </b>
       {children}
     </p>
   );
