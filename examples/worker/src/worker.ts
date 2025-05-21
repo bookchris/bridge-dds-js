@@ -13,12 +13,17 @@ import * as Comlink from "comlink";
 
 export class DdsWorker {
   private dds?: Dds;
+  private initPromise?: Promise<Dds>;
 
   private async init() {
-    if (!this.dds) {
-      const module = await loadDds();
-      this.dds = new Dds(module);
+    if (this.dds) {
+      return this.dds;
     }
+    if (this.initPromise) {
+      return await this.initPromise;
+    }
+    this.initPromise = loadDds().then((module) => new Dds(module));
+    this.dds = await this.initPromise;
     return this.dds;
   }
 

@@ -17,12 +17,15 @@ import {
 } from "../../common/testdata";
 
 function useDdsWorker() {
-  return useMemo(() => {
-    const worker = new Worker(new URL("./worker", import.meta.url), {
-      type: "module",
-    });
-    return Comlink.wrap<Dds>(worker);
-  }, []);
+  return useMemo(
+    () =>
+      Comlink.wrap<Dds>(
+        new Worker(new URL("./worker", import.meta.url), {
+          type: "module",
+        })
+      ),
+    []
+  );
 }
 
 function useAsyncApi<T>(func: () => Promise<T>): {
@@ -66,7 +69,7 @@ function SolveBoardPBNExample({
   dds: Comlink.Remote<Dds>;
 }) {
   const { output, error } = useAsyncApi(() =>
-    dds.SolveBoardPBN(dealPbn, -1, 3, 2)
+    dds.SolveBoardPBN(dealPbn, -1, 3, 1)
   );
   return <ExampleOutput input={{ dealPbn }} output={output} error={error} />;
 }
@@ -98,19 +101,19 @@ function App() {
     <div>
       <h1>AnalyzePlayPBN examples</h1>
       {analyzePlayPBNExamples.map((inputs, i) => (
-        <ExampleHeading key={i} i={i}>
+        <ExampleHeading key={i} i={i} label={inputs.label}>
           <AnalyzePlayPBNExample {...inputs} dds={dds} />
         </ExampleHeading>
       ))}
       <h1>CalcDDTablePBN / ParDealer examples</h1>
       {calcDDTablePBNExamples.map((inputs, i) => (
-        <ExampleHeading key={i} i={i}>
+        <ExampleHeading key={i} i={i} label={inputs.label}>
           <CalcDDTablePBNExample {...inputs} dds={dds} />
         </ExampleHeading>
       ))}
       <h1>SolveBoardPBN examples</h1>
       {solveBoardPBNExamples.map((inputs, i) => (
-        <ExampleHeading key={i} i={i}>
+        <ExampleHeading key={i} i={i} label={inputs.label}>
           <SolveBoardPBNExample {...inputs} dds={dds} />
         </ExampleHeading>
       ))}
